@@ -1,4 +1,26 @@
-<?
+<?php
+require_once("constantVars.php");
+$databaseName = DBNAME;
+$tableName = 'offers';
+
+//open database
+$dbc = mysqli_connect(DBHOST, DBUSER, DBPASSWORD, DBNAME)
+    or die('Error connection to MySQL server');
+
+// insert data into the sers table
+$query = "SELECT * FROM response";
+
+$result = mysqli_query($dbc, $query)
+	or die('Error querying database.');
+
+// $rows = array();
+// 
+// while($row = mysqli_fetch_array($result)){
+//     array_push($rows, $row);
+// }
+//close database
+
+mysqli_close($dbc);
 
 class UserData
 {

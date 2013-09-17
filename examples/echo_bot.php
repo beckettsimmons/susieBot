@@ -59,8 +59,11 @@ $client = new JAXL(array(
 	'jid' => $argv[1],
 	'pass' => $argv[2],
 	
+	// (optional) test
+	'strict' => TRUE,
+	
 	// (optional) srv lookup is done if not provided
-	//'host' => 'xmpp.domain.tld',
+	//'host' => 'chat.facebook.com',
 
 	// (optional) result from srv lookup used by default
 	//'port' => 5222,
@@ -72,7 +75,7 @@ $client = new JAXL(array(
 	//'resource' => 'resource',
 	
 	// (optional) defaults to PLAIN if supported, else other methods will be automatically tried
-	//'auth_type' => @$argv[3] ? $argv[3] : 'X-FACEBOOK-PLATFORM',
+	'auth_type' => @$argv[3] ? $argv[3] : 'X-FACEBOOK-PLATFORM',
 	
 	'log_level' => JAXL_INFO
 ));
@@ -152,7 +155,7 @@ $client->add_cb('on_disconnect', function() {
 //
 
 $client->start(array(
-	'--with-debug-shell' => true,
+	'--with-debug-shell' => false,
 	'--with-unix-sock' => true
 ));
 echo "done\n";
