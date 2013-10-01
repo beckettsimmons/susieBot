@@ -13,6 +13,7 @@ $input = "";
 while($input != "exit"){
   $input = readline("You: ");
   $stanza = new Stanza();
+  $stanza->body = $input;
   echo getResponse($stanza, $userDataList) . "\n";
 }
 
