@@ -8,15 +8,17 @@ $dbc = mysqli_connect(DBHOST, DBUSER, DBPASSWORD, DBNAME)
     or die('Error connection to MySQL server');
 
 // First query grabs everyting
-$query = "SELECT * FROM response AS r, pattern AS p, patternResponse AS pr WHERE r.patternResponseID = pr.patternResponseID AND p.patternResponseID = pr.patternResponseID;";
+$query = "SELECT * FROM response AS r, pattern AS p, patternResponse AS pr WHERE r.patternResponseID = pr.patternResponseID AND p.patternResponseID = pr.patternResponseID ORDER BY p.priority DESC;";
 
 $result = mysqli_query($dbc, $query)
 	or die('Error querying database. 1 \n');
 
-$allRows = array();
+$allRowsOriginal = array();
 while($row = mysqli_fetch_array($result)){
-     array_push($allRows, $row);
+     array_push($allRowsOriginal, $row);
 }
+//make the $allRows variable that will be changed when nessecary
+$allRows = $allRowsOriginal;
 
 
 
@@ -39,9 +41,9 @@ mysqli_close($dbc);
 $knowledgeBase = array();
 $tempArray = array();
 foreach($patternResponseGroups as $PRG){
-  array_push($tempArray, $PRG['patternResponseID']);
-  array_push($tempArray, array());
-  array_push($tempArray, array());
+  $tempArray['patternResponseID'] = $PRG['patternResponseID'];
+  $tempArray['patterns'] = array();
+  $tempArray['responses'] = array();
   
   array_push($knowledgeBase, $tempArray);
   
@@ -50,13 +52,13 @@ foreach($patternResponseGroups as $PRG){
 
 //TODO: ATM the patternResonseGropus maping to the knowledge base with an  ID  number and the $index is messign up...
 
-//Now add all of the pattens and resposnes to groups
+//Now add all of the pattens and resposnes to their respective groups
 $index = 0;
 foreach($patternResponseGroups as $PRG){
   foreach($allRows as $row){
     if($row['patternResponseID'] == $PRG['patternResponseID']){
-      array_push($knowledgeBase[$index][1], $row['regex']);
-      array_push($knowledgeBase[$index][2], $row['string']);
+      array_push($knowledgeBase[$index]['patterns'], $row['regex']);
+      array_push($knowledgeBase[$index]['responses'], $row['responseString']);
     }
   }
   $index +=1;
@@ -85,48 +87,30 @@ function getResponse ($stanza, $userDataList){
     global $allRows;
     $tempUserData = new UserData();
     $response = "default response";
-    
-    // first find out if we alreqady have data on the user
-    /*foreach($userDataList as $user){
-        if(!is_null($user)){
-            if($user->clientID== $stanza->from){ // if we get a match then we want to update the user data and get a response.
-                $tempUserData = $user;
-                //echo "got here";
-                
-                switch ($tempUserData->responseNumber) {
-                    case 0:
-                        $response = "1";
-                        break;
-                    case 1:
-                        $response = "2";
-                        break;
-                    case 2:
-                        $response = "3";
-                        break;
-                }
-                $tempUserData->responseNumber+=1;
-                
-                $user = $tempUserData;
+    $breakFlag = false;//flag to break out of the second loop on pattern match
     
     
-    
-    
-                break;
-            }
-        }
-    }*/
-    foreach($knowledgeBase as $knowledgeBit){
-    // the /'s that are before and after the regex are mandatory php syntax evidently.
-    // the trailing i make the regex case insensitive.
-      foreach($knowledgeBit[1] as $regex){
+    //now search for regex matches through all of the pre-sorted by priotiy patterns.
+    foreach($allRows as $row){
       
-	if(preg_match("/" . $regex . "/i", $stanza->body)){
-	  $response =  $knowledgeBit[2][rand(0,sizeof($knowledgeBit[2]))];
-	  break;
-	}
-      }
-    }
     
+      // the /'s that are before and after the regex are mandatory php syntax evidently.
+      // the trailing i make the regex case insensitive.
+      if(preg_match("/" . $row['regex'] . "/i", $stanza->body)){
+	  
+	  //If we find a match then find all of it's corresponding responses via the knowledge Base
+	  foreach($knowledgeBase as $knowledgeBit){
+	    if($knowledgeBit['patternResponseID'] == $row['patternResponseID']){
+	      $response =  $knowledgeBit['responses'][rand(0,sizeof($knowledgeBit['responses'])-1)];
+	      $breakFlag = True;
+	      break;
+	    }
+	  }
+	  if($breakFlag == True){ break;}
+	  echo "Whoops something went wrong in the getResponse function and a corresponding knowledgeBit was not found..";
+	}
+      
+    }
     
     return $response;
 }
