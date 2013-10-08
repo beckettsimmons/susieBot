@@ -48,11 +48,10 @@ if($argc < 3) {
 //
 // initialize JAXL object with initial config
 //
-require_once 'responseGen.php';
+require_once 'generateKnowledgeBase.php';
 require_once 'jaxl.php';
 
-
-$userDataList = array();
+$knowledgeBase = generateKnowledgeBase();
 
 $client = new JAXL(array(
 	// (required) credentials
@@ -117,11 +116,10 @@ $client->add_cb('on_auth_failure', function($reason) {
 
 $client->add_cb('on_chat_message', function($stanza) {
 	global $client;
-    global $userDataList;
 	
     if($stanza->body != ""){
         //first generate response
-        $stanza->body = getResponse($stanza, $userDataList);
+        $stanza->body = $knowledgeBase->getResponse($stanza);
     	// echo back incoming chat message stanza
     	$stanza->to = $stanza->from;
     	$stanza->from = $client->full_jid->to_string();
