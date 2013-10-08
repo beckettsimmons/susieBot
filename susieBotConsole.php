@@ -4,17 +4,17 @@
 require_once 'responseGen.php';
 
 class Stanza{
-  public $from = 1;
+	public $from = 11;
 }
 
 $userDataList = array();
 
 $input = "";
 while($input != "exit"){
-  $input = readline("You: ");
-  $stanza = new Stanza();
-  $stanza->body = $input;
-  echo getResponse($stanza, $userDataList) . "\n";
+	$input = readline("You: ");
+	$stanza = new Stanza();
+	$stanza->body = $input;
+	echo getResponse($stanza, $userDataList) . "\n";
 }
 
 
