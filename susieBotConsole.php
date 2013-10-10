@@ -1,7 +1,6 @@
 <?php
 // This is a console forms of susie bot for testing purposes.
 
-require_once 'responseGen.php';
 require_once("userData.php");
 require_once("generateKnowledgeBase.php");
 

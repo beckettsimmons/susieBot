@@ -3,8 +3,7 @@
 class KnowledgeBase{
 	public $patterns = array();
 	public $patternResponseGroups = array();
-	public $allRowsOriginal = array();
-	public $allRowsCurrent = array();
+	public $allRows = array();
 	public $userBase = array();
 
 	function createNewUser($userID, $patternList = null){
@@ -30,6 +29,7 @@ class KnowledgeBase{
 			// the trailing i make the regex case insensitive
 			if(preg_match("/" . $pattern['regex'] . "/i", $stanza->body)){
 				$patternResponseID = $pattern['patternResponseID'];
+				$this->userBase[$stanza->from]->setPriority($pattern['patternID'], -99);
 				break;
 			}
 		}
@@ -40,6 +40,7 @@ class KnowledgeBase{
 				if($knowledgeBit['patternResponseID'] == $patternResponseID){
 					$response =  $knowledgeBit['responses']
 						[rand(0,sizeof($knowledgeBit['responses'])-1)];
+					 
 					$breakFlag = True;
 					break;
 				}
@@ -48,6 +49,7 @@ class KnowledgeBase{
 		return $response;
 	}
 
+	
 }
 
 ?>

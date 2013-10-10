@@ -12,5 +12,28 @@ class UserData
 		$this->patterns = $patternList;
 		print "Created new User\n";
 	}
+
+	//get the index of a pattern
+	function getPatternIndex($patternID){
+		$index = 0;
+		foreach($this->patterns as $pattern){
+			if($pattern['patternID'] == $patternID){return $index;}
+			$index+=1;
+		}
+	}
+
+	//Set pattern piority
+	function setPriority($patternID, $priority){
+		$index = $this->getPatternIndex($patternID);
+		$this->patterns[$index]['priority'] = $priority;
+		
+		//Resort the list.
+		foreach ($this->patterns as $key => $row) {
+			    $priorities[$key]  = $row['priority'];
+		}
+		array_multisort($priorities, SORT_DESC, SORT_NUMERIC, 
+						$this->patterns);
+
+	}
 }
 ?>

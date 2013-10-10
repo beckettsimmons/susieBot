@@ -22,10 +22,8 @@ function generateKnowledgeBase(){
 		or die('Error querying database. 1 \n');
 
 	while($row = mysqli_fetch_array($result)){
-		array_push($knowledgeBase->allRowsOriginal, $row);
+		array_push($knowledgeBase->allRows, $row);
 	}
-	//make the $allRows variable that will be changed when nessecary
-	$knowledgeBase->allRows = $knowledgeBase->allRowsOriginal;
 
 
 	////////////////////////////////////////////////////
@@ -69,15 +67,16 @@ function generateKnowledgeBase(){
 		$tempArray = array();
 	}
 
-	//TODO: ATM the patternResponseGroups maping to the knowledge base with an  ID  number and the $index is messign up...
 
 	//Now add all of the pattens and resposnes to their respective groups
 	$index = 0;
 	foreach($tempPatternResponseGroups as $PRG){
 		foreach($knowledgeBase->allRows as $row){
 			if($row['patternResponseID'] == $PRG['patternResponseID']){
-				array_push($knowledgeBase->patternResponseGroups[$index]['patterns'], $row['regex']);
-				array_push($knowledgeBase->patternResponseGroups[$index]['responses'], $row['responseString']);
+				array_push($knowledgeBase->patternResponseGroups[$index]['patterns'], 
+					$row['regex']);
+				array_push($knowledgeBase->patternResponseGroups[$index]['responses'], 
+					$row['responseString']);
 			}
 		}
 		$index +=1;
