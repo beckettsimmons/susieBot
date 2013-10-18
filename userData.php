@@ -4,12 +4,14 @@ class UserData
 	public $userID;
 	//patterns for each user, so that topics changes indepentdently
 	public $patterns =  array();
+	public $patternResponseGroups = array();
 	public $responseNumber = 0; //how many responses and questions have been sent.
 	public $email = ""; // if we ever get their email, it goes here.
     // etc.
-	function __construct($userID, $patternList){
+	function __construct($userID, $patternList, $patternResponseGroupsList){
 		$this->userID = $userID;
 		$this->patterns = $patternList;
+		$this->patternResponseGroups = $patternResponseGroupsList;
 		print "Created new User\n";
 	}
 
@@ -34,6 +36,16 @@ class UserData
 		array_multisort($priorities, SORT_DESC, SORT_NUMERIC, 
 						$this->patterns);
 
+	}
+
+	//Set priority of a whole patternResponse group
+	function setGroupPriority($patternResponseID, $priority){
+		//find the right group first.
+		foreach($this->patterns as $pattern){
+			if($pattern['patternResponseID'] == $patternResponseID){
+				$this->setPriority($pattern['patternID'], $priority);
+			}
+		}
 	}
 }
 ?>

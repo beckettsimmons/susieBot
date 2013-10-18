@@ -6,17 +6,20 @@ class KnowledgeBase{
 	public $allRows = array();
 	public $userBase = array();
 
-	function createNewUser($userID, $patternList = null){
+	function createNewUser($userID, $patternList = null, $patternResponseGroupsList=null){
 		if($patternList == null){ $patternList = $this->patterns;}
+		if($patternResponseGroupsList == null){
+			$patternResponseGroupsList = $this->patternResponseGroups;
+		}
 		$this->userBase[$userID] = 
-			new UserData($userID, $patternList);
+			new UserData($userID, $patternList, $patternResponseGroupsList);
 	}
 
 	function getResponse ($stanza){
 		//$tempUserData = new UserData();
 		$response = "default response";
 		$patternResponseID = -1;
-
+		
 		
 		//Create new profile data if nessecary
 		if(!isset($this->userBase[$stanza->from])){
@@ -29,7 +32,8 @@ class KnowledgeBase{
 			// the trailing i make the regex case insensitive
 			if(preg_match("/" . $pattern['regex'] . "/i", $stanza->body)){
 				$patternResponseID = $pattern['patternResponseID'];
-				$this->userBase[$stanza->from]->setPriority($pattern['patternID'], -99);
+				$this->userBase[$stanza->from]->
+						setGroupPriority($pattern['patternResponseID'], -99);
 				break;
 			}
 		}
@@ -38,8 +42,13 @@ class KnowledgeBase{
 		if($patternResponseID != -1){
 			foreach($this->patternResponseGroups as $knowledgeBit){
 				if($knowledgeBit['patternResponseID'] == $patternResponseID){
-					$response =  $knowledgeBit['responses']
-						[rand(0,sizeof($knowledgeBit['responses'])-1)];
+					//Execute any php commands that could be used in making a resopnse
+					eval($knowledgeBit['command']);
+
+					$tempResponse = $knowledgeBit['responses']
+								[rand(0,sizeof($knowledgeBit['responses'])-1)] ;
+
+					eval("\$response = \"$tempResponse \";");
 					 
 					$breakFlag = True;
 					break;

@@ -61,6 +61,9 @@ function generateKnowledgeBase(){
 		$tempArray['patternResponseID'] = $PRG['patternResponseID'];
 		$tempArray['patterns'] = array();
 		$tempArray['responses'] = array();
+		$tempArray['name'] = $PRG['name'];
+		$tempArray['command'] = $PRG['command'];
+		$tempArray['priority'] = $PRG['priority'];
 
 		array_push($knowledgeBase->patternResponseGroups, $tempArray);
 
