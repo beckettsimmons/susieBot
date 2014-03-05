@@ -47,5 +47,15 @@ class UserData
 			}
 		}
 	}
+
+	//Set the context of a user session.
+	function setContext($contextID, $priority){
+		foreach($this->patternResponseGroups as $PRG){
+			if($PRG['contextID'] == $contextID){
+				$this->setGroupPriority($PRG['patternResponseID'], $priority);
+			}
+		
+		}
+	}
 }
 ?>
