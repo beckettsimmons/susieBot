@@ -57,13 +57,15 @@ class KnowledgeBase{
 							->changeContext
 					);
 					if($arraySize != 0){
-						//TODO: Loop through whole array of changeContext
-						$this->userBase[$stanza->from]->setContext(
-							$knowledgeBit['responses'][$randomIndex]
-								->changeContext[0]['contextID'],
-							$knowledgeBit['responses'][$randomIndex]
-								->changeContext[0]['newPriority']
-						);
+						foreach($knowledgeBit['responses'][$randomIndex]
+									->changeContext as $changeContext){
+							
+							$this->userBase[$stanza->from]->setContext(
+								$changeContext['contextID'],
+								$changeContext['newPriority'],
+								$changeContext['relativePriority']
+							);
+						}
 					}
 
 					$breakFlag = True;

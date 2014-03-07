@@ -49,7 +49,27 @@ class UserData
 	}
 
 	//Set the context of a user session.
-	function setContext($contextID, $priority){
+	function setContext($contextID, $truePriority, $relativePriority){
+		// Decide which priority to use. Prefer rel over true.
+		if($relativePriority == NULL){
+			$priority = $truePriority;
+		}else{
+			//Calculate the relative priority below!
+			//TODO: Maybe we shouldn't assume presorted patterns list...
+			if($relativePriority=='TOP'){
+				$priority = $this->patterns[0]['priority'] + 1;
+			}
+			if($relativePriority=='MIDDLE'){
+				//TODO: Make a better estimation if this will be kept!
+				$arraySize = sizeof($this->patterns)/2;
+				$priority = $this->patterns[$arraySize]['priority'] - 1;
+			}
+			if($relativePriority=='BOTTOM'){
+				$arraySize = sizeof($this->patterns);
+				$priority = $this->patterns[$arraySize-1]['priority'] - 1;
+			}
+		}
+
 		foreach($this->patternResponseGroups as $PRG){
 			if($PRG['contextID'] == $contextID){
 				$this->setGroupPriority($PRG['patternResponseID'], $priority);
