@@ -52,6 +52,19 @@ class KnowledgeBase{
 					eval("\$response = \"$tempResponse \";");
 					
 					//Now change the context if nessecary.
+					//Change by pattern response.
+					$arraySize = sizeof($knowledgeBit['changeContext']);
+					if($arraySize != 0){
+						foreach($knowledgeBit['changeContext']
+									as $changeContext){
+							$this->userBase[$stanza->from]->setContext(
+								$changeContext['contextID'],
+								$changeContext['newPriority'],
+								$changeContext['relativePriority']
+							);
+						}
+					}
+					//Now for change by response.	
 					$arraySize = sizeof(
 						$knowledgeBit['responses'][$randomIndex]
 							->changeContext

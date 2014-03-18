@@ -7,6 +7,7 @@ function generateKnowledgeBase(){
 	$knowledgeBase = new KnowledgeBase();
 	$tempPatternResponseGroups = array();
 	$tempChangeByResponse = array();
+	$tempChangeByPatternResponse = array();
 
 	//open database
 	$dbc = mysqli_connect(DBHOST, DBUSER, DBPASSWORD, DBNAME)
@@ -66,6 +67,18 @@ function generateKnowledgeBase(){
 	}
 
 
+	/**
+	 * Fith query grabs everything in the changeContextByPatternResponse table.
+	 */
+	$query = "SELECT * FROM changeContextByPatternResponse;";
+
+	$result = mysqli_query($dbc, $query)
+		or die('Error querying database. 5 \n');
+
+	while($row = mysqli_fetch_array($result)){
+		array_push($tempChangeByPatternResponse, $row);
+	}
+
 	//close database
 	mysqli_close($dbc);
 
@@ -82,6 +95,7 @@ function generateKnowledgeBase(){
 		$tempArray['command'] = $PRG['command'];
 		$tempArray['priority'] = $PRG['priority'];
 		$tempArray['contextID'] = $PRG['contextID'];
+		$tempArray['changeContext'] = array();
 
 		array_push($knowledgeBase->patternResponseGroups, $tempArray);
 
@@ -90,20 +104,43 @@ function generateKnowledgeBase(){
 
 
 	//Now add all of the pattens and resposnes to their respective groups
-	//TODO: Why do we have to have an index var here?
-	$index = 0;
-	foreach($tempPatternResponseGroups as $PRG){
+	//TODO: Maybe rename all these silly acronyms...
+	foreach($knowledgeBase->patternResponseGroups as &$PRG){
+	
+		// Add change by pattern response data here.
+		foreach($tempChangeByPatternResponse as $CBPR){
+			if($CBPR['contextID'] == $PRG['contextID']){
+
+				$tempCBPRArray = array();
+				// Build list of context changes for current pattern response.
+				foreach($tempChangeByPatternResponse as $TCBPR){
+					if($TCBPR['patternResponseID'] == $CBPR['patternResponseID']){
+						$tempCBPRArray = array();
+						array_push(
+							$tempCBPRArray,
+							$CBPR
+						);
+					}
+				}
+
+				$PRG['changeContext'] = $tempCBPRArray;
+			}
+		}
+	}
+	// Passing the patternResponseGroups by reference. 
+	// Maybe not the best practice?
+	foreach($knowledgeBase->patternResponseGroups as &$PRG){
 		foreach($knowledgeBase->allRows as $row){
 			if($row['patternResponseID'] == $PRG['patternResponseID']){
 				// Add the pattern regex accordingly.
 				array_push(
-					$knowledgeBase->patternResponseGroups[$index]
-						['patterns'],
+					$PRG['patterns'],
 					$row['regex']
 				);
 
+
 				$tempCBRArray = array();
-				// Get list yof context changes.
+				// Get list of context changes for the current response.
 				foreach($tempChangeByResponse as $CBR){
 					if($CBR['responseID'] == $row['responseID']){
 						$tempCBRArray = array();
@@ -114,19 +151,19 @@ function generateKnowledgeBase(){
 					}
 				}
 				//If a response has a context change, added it to the end.
-				//If there was no info just append a black array.
+				//If there was no info just append a blank array.
 				array_push(
-					$knowledgeBase->patternResponseGroups[$index]['responses'],
+					$PRG['responses'],
 					(object) array(
 						'responseString' => $row['responseString'],
 						'changeContext' => $tempCBRArray
 					)
 				);
-
 			}
 		}
-		$index += 1;
 	}
+
+
 	return $knowledgeBase;
 }
 ?>
