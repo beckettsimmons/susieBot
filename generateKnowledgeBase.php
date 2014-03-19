@@ -55,6 +55,9 @@ function generateKnowledgeBase(){
 
 
 
+	//TODO: Change the below structure into an object.
+	// Only use arrays for actual array and objects for attribute.
+
 	// Create array of initial structure of groups
 	$tempArray = array();
 	foreach($tempPatternResponseGroups as $PRG){

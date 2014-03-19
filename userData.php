@@ -30,8 +30,8 @@ class UserData
 		$this->patterns[$index]['priority'] = $priority;
 		
 		//Resort the list.
-		foreach ($this->patterns as $key => $row) {
-			    $priorities[$key]  = $row['priority'];
+		foreach ($this->patterns as $key => $pattern) {
+			    $priorities[$key]  = $pattern['priority'];
 		}
 		array_multisort($priorities, SORT_DESC, SORT_NUMERIC, 
 						$this->patterns);

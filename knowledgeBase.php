@@ -4,6 +4,8 @@ class KnowledgeBase{
 	public $patterns = array();
 	public $patternResponseGroups = array();
 	public $allRows = array();
+	//The knowledgebase contains an array of userbases.
+	//Not the opposite because a userbase's KB can change.
 	public $userBase = array();
 
 	function createNewUser($userID, $patternList = null, $patternResponseGroupsList=null){
