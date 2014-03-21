@@ -1,5 +1,12 @@
 <?php
-//Define the Knowledge Base
+/**
+ * The knowledge base is used to store all of the data nessecary for Susie.
+ *
+ * @property array $patterns Just the patterns.
+ * @property array $patternResponseGroups Processed pattern response groups.
+ * @property array $allRows All pattern response group rows from database.
+ * @property array $userBase An associative array of user IDs with user data.
+ */
 class KnowledgeBase{
 	public $patterns = array();
 	public $patternResponseGroups = array();
@@ -8,31 +15,51 @@ class KnowledgeBase{
 	//Not the opposite because a userbase's KB can change.
 	public $userBase = array();
 
-	function createNewUser($userID, $patternList = null, $patternResponseGroupsList=null){
-		if($patternList == null){ $patternList = $this->patterns;}
+	/**
+	 * Method creates a new user profile and adds it to the knowledge base.
+	 *
+	 * @param int $userID User id of the new user.
+	 * @param array $patternList The list of patterns to use for new user.
+	 * @param array patternResponseGroupsList Pass a non defualt list.
+	 */
+	function createNewUser(
+		$userID,
+		$patternList = null,
+		$patternResponseGroupsList=null
+	){
+		// Initialization.
+		if($patternList == null){
+			$patternList = $this->patterns;
+		}
 		if($patternResponseGroupsList == null){
 			$patternResponseGroupsList = $this->patternResponseGroups;
 		}
-		$this->userBase[$userID] = 
+
+		$this->userBase[$userID] =
 			new UserData($userID, $patternList, $patternResponseGroupsList);
 	}
 
+	/**
+	 * Method returns a string response based on the user data.
+	 *
+	 * @param JAXLMessageObj $stanza The JAXL message object received.
+	 * @returns string $response The response to be sent to user.
+	 */
 	function getResponse ($stanza){
-		//$tempUserData = new UserData();
 		$response = "default response";
 		$patternResponseID = -1;
 		
-		
-		//Create new profile data if nessecary
+		//Create new user profile data if nessecary.
 		if(!isset($this->userBase[$stanza->from])){
 			$this->createNewUser($stanza->from);
 		}
 		//TODO: Maybe create a local reference to the selected user?
+		// Just to shorten up the syntax. And also because we don't modify it.
 		
 		//Search for pattern match.
 		foreach($this->userBase[$stanza->from]->patterns as $pattern){
-			// the /'s that are mandatory php syntax evidently.
-			// the trailing i make the regex case insensitive
+			// The /'s that are mandatory php syntax evidently.
+			// The trailing 'i' makes the regex case insensitive.
 			if(preg_match("/" . $pattern['regex'] . "/i", $stanza->body)){
 				//If match, set the patternResponseID for later use.
 				$patternResponseID = $pattern['patternResponseID'];
@@ -40,12 +67,16 @@ class KnowledgeBase{
 			}
 		}
 
-		//If pattern found, select appropriate responsei
+		//If pattern found, select appropriate response.
 		if($patternResponseID != -1){
 			foreach($this->patternResponseGroups as $knowledgeBit){
 				if($knowledgeBit['patternResponseID'] == $patternResponseID){
-					//Execute any php commands that could be used in making a resopnse
+					//Execute any php commands that may be needed.
 					eval($knowledgeBit['command']);
+					
+					// TODO: Maybe in the future, prioritize responses?
+					// TODO: Feature that prevents repeated responses.
+					// Going to pick a random response index.
 					$randomIndex =
 						rand(0,sizeof($knowledgeBit['responses'])-1);
 					$tempResponse = $knowledgeBit['responses']
@@ -85,11 +116,9 @@ class KnowledgeBase{
 
 					$breakFlag = True;
 					break;
-				}
-			}
-		}
+				} // if
+			} //foreach
+		} //if
 		return $response;
-	}
-
-	
+	} // getResponse()
 }

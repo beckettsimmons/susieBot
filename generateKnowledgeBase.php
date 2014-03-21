@@ -2,17 +2,21 @@
 require_once("constantVars.php");
 require_once("knowledgeBase.php");
 
-//Generate Knowledge Base.
+/**
+ * Creates a knowledge base by extracting data from database.
+ *
+ * @return object Returns a knowledge base object.
+ */
 function generateKnowledgeBase(){
 	$knowledgeBase = new KnowledgeBase();
 	$tempPatternResponseGroups = array();
 	$tempChangeByResponse = array();
 	$tempChangeByPatternResponse = array();
 
-	//open database
+	//Create database connection variable.
 	$dbc = mysqli_connect(DBHOST, DBUSER, DBPASSWORD, DBNAME)
 		or die('Error connection to MySQL server');
-
+	//TODO What exactly does $allRows do? It should be renamed.
 	/**
 	 *  First query grabs an inner join of the patternResponse, pattern,
 	 *  and respose tables.
@@ -79,16 +83,16 @@ function generateKnowledgeBase(){
 		array_push($tempChangeByPatternResponse, $row);
 	}
 
-	//close database
+	// Close database connection.
 	mysqli_close($dbc);
 
 
 
 
-	//TODO: Change the below structure into an object.
+	// TODO: Change the below structure into an object.
 	// Only use arrays for actual array and objects for attribute.
 
-	// Create array of initial structure of groups
+	// Create array of initial structure of groups.
 	$tempArray = array();
 	foreach($tempPatternResponseGroups as $PRG){
 		$tempArray['patternResponseID'] = $PRG['patternResponseID'];
@@ -106,18 +110,18 @@ function generateKnowledgeBase(){
 	}
 
 
-	//Now add all of the pattens and resposnes to their respective groups
-	//TODO: Maybe rename all these silly acronyms...
+	// Add change by pattern response data here.
+	// TODO: Maybe rename all these silly acronyms...
 	foreach($knowledgeBase->patternResponseGroups as &$PRG){
-	
-		// Add change by pattern response data here.
 		foreach($tempChangeByPatternResponse as $CBPR){
 			if($CBPR['contextID'] == $PRG['contextID']){
 
 				$tempCBPRArray = array();
 				// Build list of context changes for current pattern response.
 				foreach($tempChangeByPatternResponse as $TCBPR){
-					if($TCBPR['patternResponseID'] == $CBPR['patternResponseID']){
+					if($TCBPR['patternResponseID'] ==
+						$CBPR['patternResponseID']
+					){
 						$tempCBPRArray = array();
 						array_push(
 							$tempCBPRArray,
@@ -130,8 +134,11 @@ function generateKnowledgeBase(){
 			}
 		}
 	}
-	// Passing the patternResponseGroups by reference. 
+
+	//TODO: Passing the patternResponseGroups by reference.
 	// Maybe not the best practice?
+
+	// Now add all of the pattens and resposnes to their respective groups.
 	foreach($knowledgeBase->patternResponseGroups as &$PRG){
 		foreach($knowledgeBase->allRows as $row){
 			if($row['patternResponseID'] == $PRG['patternResponseID']){
@@ -141,7 +148,7 @@ function generateKnowledgeBase(){
 					$row['regex']
 				);
 
-
+				//Now add the response object with context change data.
 				$tempCBRArray = array();
 				// Get list of context changes for the current response.
 				foreach($tempChangeByResponse as $CBR){
@@ -153,8 +160,8 @@ function generateKnowledgeBase(){
 						);
 					}
 				}
-				//If a response has a context change, added it to the end.
-				//If there was no info just append a blank array.
+				// If a response has a context change, added it to the end.
+				// If there was no info just append a blank array.
 				array_push(
 					$PRG['responses'],
 					(object) array(
@@ -165,7 +172,6 @@ function generateKnowledgeBase(){
 			}
 		}
 	}
-
 
 	return $knowledgeBase;
 }

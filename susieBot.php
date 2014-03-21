@@ -114,6 +114,7 @@ $client->add_cb('on_auth_failure', function($reason) {
 	$client->send_end_stream();
 });
 
+// This is the main function Susie is using.
 $client->add_cb('on_chat_message', function($stanza) {
 	global $client;
 	
