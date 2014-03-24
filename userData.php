@@ -41,7 +41,7 @@ class UserData
 	function getPatternIndex($patternID){
 		$index = 0;
 		foreach($this->patterns as $pattern){
-			if($pattern['patternID'] == $patternID){
+			if($pattern->patternID == $patternID){
 				return $index;
 			}
 			$index+=1;
@@ -58,11 +58,11 @@ class UserData
 	// TODO: Method needs to be renamed to setPatternPriority().
 	function setPriority($patternID, $priority){
 		$index = $this->getPatternIndex($patternID);
-		$this->patterns[$index]['priority'] = $priority;
+		$this->patterns[$index]->priority = $priority;
 		
 		//Resort the list.
 		foreach ($this->patterns as $key => $pattern) {
-			$priorities[$key]  = $pattern['priority'];
+			$priorities[$key]  = $pattern->priority;
 		}
 		array_multisort($priorities, SORT_DESC, SORT_NUMERIC,
 						$this->patterns);
@@ -78,8 +78,8 @@ class UserData
 	function setGroupPriority($patternResponseID, $priority){
 		//find the right group first.
 		foreach($this->patterns as $pattern){
-			if($pattern['patternResponseID'] == $patternResponseID){
-				$this->setPriority($pattern['patternID'], $priority);
+			if($pattern->patternResponseID == $patternResponseID){
+				$this->setPriority($pattern->patternID, $priority);
 			}
 		}
 	}
@@ -100,22 +100,22 @@ class UserData
 			//Calculate the relative priority below!
 			//TODO: Maybe we shouldn't assume presorted patterns list...
 			if($relativePriority=='TOP'){
-				$priority = $this->patterns[0]['priority'] + 1;
+				$priority = $this->patterns[0]->priority + 1;
 			}
 			if($relativePriority=='MIDDLE'){
 				//TODO: Make a better estimation if this will be kept!
 				$arraySize = sizeof($this->patterns)/2;
-				$priority = $this->patterns[$arraySize]['priority'] - 1;
+				$priority = $this->patterns[$arraySize]->priority - 1;
 			}
 			if($relativePriority=='BOTTOM'){
 				$arraySize = sizeof($this->patterns);
-				$priority = $this->patterns[$arraySize-1]['priority'] - 1;
+				$priority = $this->patterns[$arraySize-1]->priority - 1;
 			}
 		}
 
 		foreach($this->patternResponseGroups as $PRG){
-			if($PRG['contextID'] == $contextID){
-				$this->setGroupPriority($PRG['patternResponseID'], $priority);
+			if($PRG->contextID == $contextID){
+				$this->setGroupPriority($PRG->patternResponseID, $priority);
 			}
 		
 		}

@@ -30,7 +30,20 @@ function generateKnowledgeBase(){
 		or die('Error querying database. 1 \n');
 
 	while($row = mysqli_fetch_array($result)){
-		array_push($knowledgeBase->allRows, $row);
+		array_push(
+			$knowledgeBase->allRows,
+			(object) array(
+			'responseID' => $row['responseID'],
+			'name' => $row['name'],
+			'responseString' => $row['responseString'],
+			'patternResponseID' => $row['patternResponseID'],
+			'patternID' => $row['patternID'],
+			'regex' => $row['regex'],
+			'priority' => $row['priority'],
+			'command' => $row['command'],
+			'contextID' => $row['contextID']
+			)
+		);
 	}
 
 
@@ -43,7 +56,16 @@ function generateKnowledgeBase(){
 		or die('Error querying database. 2 \n');
 
 	while($row = mysqli_fetch_array($result)){
-		array_push($tempPatternResponseGroups, $row);
+		array_push(
+			$tempPatternResponseGroups, 
+			(object) array(
+				'patternResponseID' => $row['patternResponseID'],
+				'name' => $row['name'],
+				'command' => $row['command'],
+				'priority' => $row['priority'],
+				'contextID' => $row['contextID']
+			)
+		);
 	}
 
 	/**
@@ -55,7 +77,16 @@ function generateKnowledgeBase(){
 		or die('Error querying database. 3 \n');
 
 	while($row = mysqli_fetch_array($result)){
-		array_push($knowledgeBase->patterns, $row);
+		array_push(
+			$knowledgeBase->patterns,
+			(object) array(
+				'patternID' => $row['patternID'],
+				'name' => $row['name'],
+				'regex' => $row['regex'],
+				'patternResponseID' => $row['patternResponseID'],
+				'priority' => $row['priority']
+			)
+		);
 	}
 
 	/**
@@ -67,7 +98,17 @@ function generateKnowledgeBase(){
 		or die('Error querying database. 4 \n');
 
 	while($row = mysqli_fetch_array($result)){
-		array_push($tempChangeByResponse, $row);
+		array_push(
+			$tempChangeByResponse,
+			(object) array(
+				'changeContextByResponseID' =>
+					$row['changeContextByResponseID'],
+				'contextID' => $row['contextID'],
+				'responseID' => $row['responseID'],
+				'newPriority' => $row['newPriority'],
+				'relativePriority' => $row['relativePriority']
+			)
+		);
 	}
 
 
@@ -80,7 +121,17 @@ function generateKnowledgeBase(){
 		or die('Error querying database. 5 \n');
 
 	while($row = mysqli_fetch_array($result)){
-		array_push($tempChangeByPatternResponse, $row);
+		array_push(
+			$tempChangeByPatternResponse,
+			(object) array(
+				'changeContextByPatternResponseID' =>
+					$row['changeContextByPatternResponseID'],
+				'contextID' => $row['contextID'],
+				'patternResponseID' => $row['patternResponseID'],
+				'newPriority' => $row['newPriority'],
+				'relativePriority' => $row['relativePriority']
+			)
+		);
 	}
 
 	// Close database connection.
@@ -89,24 +140,20 @@ function generateKnowledgeBase(){
 
 
 
-	// TODO: Change the below structure into an object.
-	// Only use arrays for actual array and objects for attribute.
-
 	// Create array of initial structure of groups.
-	$tempArray = array();
+	$tempObject;
 	foreach($tempPatternResponseGroups as $PRG){
-		$tempArray['patternResponseID'] = $PRG['patternResponseID'];
-		$tempArray['patterns'] = array();
-		$tempArray['responses'] = array();
-		$tempArray['name'] = $PRG['name'];
-		$tempArray['command'] = $PRG['command'];
-		$tempArray['priority'] = $PRG['priority'];
-		$tempArray['contextID'] = $PRG['contextID'];
-		$tempArray['changeContext'] = array();
-
-		array_push($knowledgeBase->patternResponseGroups, $tempArray);
-
-		$tempArray = array();
+		$tempObject = (object) array(
+			'patternResponseID' => $PRG->patternResponseID,
+			'patterns' => array(),
+			'responses' => array(),
+			'name' => $PRG->name,
+			'command' => $PRG->command,
+			'priority' => $PRG->priority,
+			'contextID' => $PRG->contextID,
+			'changeContext' => array()
+		);
+		array_push($knowledgeBase->patternResponseGroups, $tempObject);
 	}
 
 
@@ -114,13 +161,13 @@ function generateKnowledgeBase(){
 	// TODO: Maybe rename all these silly acronyms...
 	foreach($knowledgeBase->patternResponseGroups as &$PRG){
 		foreach($tempChangeByPatternResponse as $CBPR){
-			if($CBPR['contextID'] == $PRG['contextID']){
+			if($CBPR->contextID == $PRG->contextID){
 
 				$tempCBPRArray = array();
 				// Build list of context changes for current pattern response.
 				foreach($tempChangeByPatternResponse as $TCBPR){
-					if($TCBPR['patternResponseID'] ==
-						$CBPR['patternResponseID']
+					if($TCBPR->patternResponseID ==
+						$CBPR->patternResponseID
 					){
 						$tempCBPRArray = array();
 						array_push(
@@ -130,7 +177,7 @@ function generateKnowledgeBase(){
 					}
 				}
 
-				$PRG['changeContext'] = $tempCBPRArray;
+				$PRG->changeContext = $tempCBPRArray;
 			}
 		}
 	}
@@ -141,18 +188,18 @@ function generateKnowledgeBase(){
 	// Now add all of the pattens and resposnes to their respective groups.
 	foreach($knowledgeBase->patternResponseGroups as &$PRG){
 		foreach($knowledgeBase->allRows as $row){
-			if($row['patternResponseID'] == $PRG['patternResponseID']){
+			if($row->patternResponseID == $PRG->patternResponseID){
 				// Add the pattern regex accordingly.
 				array_push(
-					$PRG['patterns'],
-					$row['regex']
+					$PRG->patterns,
+					$row->regex
 				);
 
 				//Now add the response object with context change data.
 				$tempCBRArray = array();
 				// Get list of context changes for the current response.
 				foreach($tempChangeByResponse as $CBR){
-					if($CBR['responseID'] == $row['responseID']){
+					if($CBR->responseID == $row->responseID){
 						$tempCBRArray = array();
 						array_push(
 							$tempCBRArray,
@@ -163,9 +210,9 @@ function generateKnowledgeBase(){
 				// If a response has a context change, added it to the end.
 				// If there was no info just append a blank array.
 				array_push(
-					$PRG['responses'],
+					$PRG->responses,
 					(object) array(
-						'responseString' => $row['responseString'],
+						'responseString' => $row->responseString,
 						'changeContext' => $tempCBRArray
 					)
 				);
